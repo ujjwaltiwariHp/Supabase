@@ -1,7 +1,5 @@
-/* FILE: src/styles/globals.css */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* FILE: src/styles/globals.css - FIXED FOR TAILWIND V4 */
+@import "tailwindcss";
 
 @layer components {
   .animation-delay-2000 {

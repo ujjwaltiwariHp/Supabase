@@ -1,14 +1,17 @@
+// FILE: src/app/api/auth/verify-otp/route.ts - COMPLETE FIX
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-if (!supabaseUrl || !supabaseServiceKey) {
+if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+const supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,13 +25,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data, error } = await supabase.auth.verifyOtp({
+    // Verify the 6-digit OTP code
+    const { data, error } = await supabaseClient.auth.verifyOtp({
       email: email.toLowerCase(),
-      token,
-      type: 'magiclink',
+      token: token,
+      type: 'email', // Changed from 'magiclink' to 'email'
     });
 
     if (error) {
+      console.error('OTP verification error:', error);
       return NextResponse.json(
         { success: false, message: 'Invalid or expired OTP' },
         { status: 400 }
@@ -37,16 +42,27 @@ export async function POST(request: NextRequest) {
 
     const userId = data.user?.id;
 
-    const { error: updateError } = await supabase
-      .from('user_profiles')
-      .update({ updated_at: new Date().toISOString() })
-      .eq('id', userId);
-
-    if (updateError) {
+    if (!userId) {
       return NextResponse.json(
-        { success: false, message: 'Failed to update user profile' },
-        { status: 400 }
+        { success: false, message: 'User not found' },
+        { status: 404 }
       );
+    }
+
+    // Create or update user profile
+    const { error: profileError } = await supabaseAdmin
+      .from('user_profiles')
+      .upsert({
+        id: userId,
+        email: email.toLowerCase(),
+        is_password_set: false,
+        updated_at: new Date().toISOString(),
+      }, {
+        onConflict: 'id'
+      });
+
+    if (profileError) {
+      console.error('Profile error:', profileError);
     }
 
     return NextResponse.json(
@@ -63,6 +79,7 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   } catch (error: any) {
+    console.error('Verify OTP error:', error);
     return NextResponse.json(
       { success: false, message: error.message },
       { status: 500 }

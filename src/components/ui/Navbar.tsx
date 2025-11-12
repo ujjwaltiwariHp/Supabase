@@ -25,7 +25,7 @@ export default function Navbar() {
     <nav className="bg-white border-b border-purple-100 shadow-sm sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex justify-between items-center">
-          <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+          <Link href="/" className="text-2xl font-bold bg-linear-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
             TaskFlow
           </Link>
           <Button onClick={handleLogout} isLoading={isLoading} size="sm">

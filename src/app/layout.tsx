@@ -1,6 +1,6 @@
-// FILE: src/app/layout.tsx
+// FILE: src/app/layout.tsx - FIXED
 import type { Metadata } from 'next';
-import '../styles/globals.css';
+import '@/styles/globals.css';
 
 export const metadata: Metadata = {
   title: 'TaskFlow - Task Management',

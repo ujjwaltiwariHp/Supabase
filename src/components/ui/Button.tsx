@@ -1,4 +1,3 @@
-// FILE: src/components/ui/Button.tsx
 'use client';
 import React from 'react';
 
@@ -20,7 +19,7 @@ export default function Button({
   const baseStyles = 'font-semibold rounded-lg transition duration-200 flex items-center justify-center gap-2 whitespace-nowrap';
 
   const variants = {
-    primary: 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white hover:shadow-lg hover:shadow-purple-500/50 disabled:opacity-50 active:scale-95',
+    primary: 'bg-linear-to-r from-blue-500 via-purple-500 to-pink-500 text-white hover:shadow-lg hover:shadow-purple-500/50 disabled:opacity-50 active:scale-95',
     secondary: 'bg-white text-purple-600 border-2 border-purple-300 hover:bg-purple-50 hover:border-purple-400 disabled:opacity-50 active:scale-95',
     danger: 'bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 active:scale-95',
   };

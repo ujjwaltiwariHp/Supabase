@@ -8,7 +8,7 @@ export default function Home() {
       <Background />
       <div className="text-center max-w-2xl">
         <h1 className="text-5xl md:text-6xl font-bold mb-6">
-          <span className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+          <span className="bg-linear-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
             TaskFlow
           </span>
         </h1>
