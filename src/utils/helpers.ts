@@ -143,3 +143,31 @@ export const isValidUrl = (url: string): boolean => {
     return false;
   }
 };
+
+
+export const getPriorityBadge = (priority: 'low' | 'medium' | 'high') => {
+  switch (priority) {
+    case 'high':
+      return { text: 'High', color: 'bg-red-500 text-white' };
+    case 'medium':
+      return { text: 'Medium', color: 'bg-yellow-400 text-gray-800' };
+    case 'low':
+    default:
+      return { text: 'Low', color: 'bg-blue-300 text-blue-900' };
+  }
+};
+
+export const getDeadlineCountdown = (deadline: string | null): string => {
+  if (!deadline) return '';
+  const now = new Date();
+  const dead = new Date(deadline);
+  const diffMs = dead.getTime() - now.getTime();
+
+  if (diffMs < 0) return 'Expired';
+
+  const diffDays = Math.ceil(diffMs / 86400000);
+
+  if (diffDays === 0) return 'Due Today';
+  if (diffDays === 1) return '1 Day Left';
+  return `${diffDays} Days Left`;
+};

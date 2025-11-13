@@ -1,12 +1,13 @@
-// FILE: src/components/forms/LoginForm.tsx
+// FILE: src/components/forms/LoginForm.tsx - FINAL FIX
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { login } from '@/lib/api';
+// The 'supabase' import is no longer needed here as we rely on middleware for session verification.
 import { validateEmail, getErrorMessage } from '@/utils/helpers';
 import Input from '../ui/Input';
 import Button from '../ui/Button';
-import { Mail, Lock } from 'lucide-react'; // Import icons
+import { Mail, Lock } from 'lucide-react';
 
 export default function LoginForm() {
   const router = useRouter();
@@ -14,7 +15,7 @@ export default function LoginForm() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [emailError, setEmailError] = useState(''); // New state for input validation error
+  const [emailError, setEmailError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,8 +35,8 @@ export default function LoginForm() {
     setIsLoading(true);
     try {
       const result = await login(email, password);
-      if (result.success) {
-        // Redirect to dashboard on successful login
+     if (result.success) {
+
         router.push('/dashboard');
       } else {
         setError(getErrorMessage(result));
@@ -56,18 +57,17 @@ export default function LoginForm() {
         placeholder="you@example.com"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        icon={<Mail className="w-5 h-5" />} // Added icon
-        error={emailError} // Display email validation error
+        icon={<Mail className="w-5 h-5" />}
+        error={emailError}
       />
       <Input
         label="Password"
-        type="password" // Now includes the show/hide toggle from Input.tsx
+        type="password"
         placeholder="••••••••"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        icon={<Lock className="w-5 h-5" />} // Added icon
+        icon={<Lock className="w-5 h-5" />}
       />
-      {/* Display general form/API error above the button */}
       {error && (
         <p className="text-red-500 text-sm mt-2 pb-2 text-center">{error}</p>
       )}

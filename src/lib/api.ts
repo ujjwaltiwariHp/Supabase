@@ -1,21 +1,44 @@
+import { supabase } from './supabaseClient';
+
 interface FetchOptions extends RequestInit {
   body?: any;
 }
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
+const getAuthToken = async (): Promise<string | null> => {
+  let { data: { session } } = await supabase.auth.getSession();
+
+  // If no session is immediately available (due to client-side race condition),
+  // force a refresh to ensure the latest token from cookies is loaded.
+  if (!session?.access_token) {
+    const { data: { session: refreshedSession } } = await supabase.auth.refreshSession();
+    session = refreshedSession;
+  }
+
+  return session?.access_token || null;
+};
+
 export const apiCall = async (
   endpoint: string,
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
   data?: any,
-  options?: Omit<FetchOptions, 'method' | 'body'>
+  options?: Omit<FetchOptions, 'method' | 'body'>,
+  requiresAuth: boolean = false
 ): Promise<any> => {
   try {
     const url = `${API_BASE_URL}${endpoint}`;
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...options?.headers,
+      ...(options?.headers as Record<string, string>),
     };
+
+    if (requiresAuth) {
+      const token = await getAuthToken();
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+    }
 
     const config: FetchOptions = {
       method,
@@ -31,7 +54,7 @@ export const apiCall = async (
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `HTTP ${response.status}`);
+      throw new Error(errorData.error || errorData.message || `HTTP ${response.status}`);
     }
 
     const result = await response.json();
@@ -40,6 +63,8 @@ export const apiCall = async (
     throw new Error(error.message || 'API call failed');
   }
 };
+
+// Authentication API calls
 
 export const signup = async (email: string) => {
   return apiCall('/api/auth/signup', 'POST', { email });
@@ -69,18 +94,43 @@ export const logoutApi = async () => {
   return apiCall('/api/auth/logout', 'POST');
 };
 
+//tasks api calls
+
 export const fetchTasks = async () => {
-  return apiCall('/api/tasks', 'GET');
+  return apiCall('/api/tasks', 'GET', undefined, undefined, true);
 };
 
-export const createTask = async (title: string, description?: string) => {
-  return apiCall('/api/tasks', 'POST', { title, description });
+export const fetchTaskById = async (id: string) => {
+  return apiCall(`/api/tasks/${id}`, 'GET', undefined, undefined, true);
 };
 
-export const updateTask = async (id: string, title?: string, description?: string, isCompleted?: boolean) => {
-  return apiCall(`/api/tasks/${id}`, 'PUT', { title, description, isCompleted });
+export const createTask = async (
+  title: string,
+  description?: string,
+  priority: 'low' | 'medium' | 'high' = 'low',
+  deadline?: string | null
+) => {
+  return apiCall('/api/tasks', 'POST', { title, description, priority, deadline }, undefined, true);
 };
+
+export const updateTask = async (
+  id: string,
+  updates: {
+    title?: string;
+    description?: string | null;
+    is_completed?: boolean;
+    priority?: 'low' | 'medium' | 'high';
+    deadline?: string | null;
+  }
+) => {
+  return apiCall(`/api/tasks/${id}`, 'PUT', updates, undefined, true);
+};
+
 
 export const deleteTask = async (id: string) => {
-  return apiCall(`/api/tasks/${id}`, 'DELETE');
+  return apiCall(`/api/tasks/${id}`, 'DELETE', undefined, undefined, true);
+};
+
+export const toggleTaskComplete = async (id: string, isCompleted: boolean) => {
+  return apiCall(`/api/tasks/${id}`, 'PUT', { is_completed: isCompleted }, undefined, true);
 };
