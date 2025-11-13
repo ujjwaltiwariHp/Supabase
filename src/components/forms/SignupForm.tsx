@@ -7,6 +7,7 @@ import { validateEmail, validateOtp, validatePassword, getErrorMessage } from '@
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
+import { Mail, Lock, Code } from 'lucide-react'; // Import icons
 
 type SignupStep = 'email' | 'otp' | 'password' | 'success';
 
@@ -85,7 +86,8 @@ export default function SignupForm() {
 
     const passwordValidation = validatePassword(password);
     if (!passwordValidation.valid) {
-      setError(passwordValidation.errors[0]);
+      // Concatenate all validation errors into a single string for display
+      setError(passwordValidation.errors.join('. '));
       return;
     }
 
@@ -115,7 +117,10 @@ export default function SignupForm() {
         title="Account Created!"
         message="Your account has been created successfully. Redirecting to login..."
         type="success"
-        onClose={() => setShowModal(false)}
+        onClose={() => {
+          setShowModal(false);
+          router.push('/login'); // Ensure redirect even if user closes the modal early
+        }}
       />
 
       {step === 'email' && (
@@ -127,6 +132,7 @@ export default function SignupForm() {
             placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            icon={<Mail className="w-5 h-5" />} // Added icon
             error={error}
           />
           <Button type="submit" isLoading={isLoading} className="w-full">
@@ -151,6 +157,7 @@ export default function SignupForm() {
             placeholder="000000"
             value={otp}
             onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+            icon={<Code className="w-5 h-5" />} // Added icon
             error={error}
             maxLength={6}
           />
@@ -159,7 +166,10 @@ export default function SignupForm() {
           </Button>
           <button
             type="button"
-            onClick={() => setStep('email')}
+            onClick={() => {
+              setStep('email');
+              setError('');
+            }}
             className="w-full text-purple-600 font-semibold hover:text-purple-700"
           >
             Back to Email
@@ -171,20 +181,25 @@ export default function SignupForm() {
         <form onSubmit={handlePasswordSubmit} className="space-y-6">
           <h2 className="text-2xl font-bold text-gray-800">Create Password</h2>
           <p className="text-gray-600 text-sm">Password must contain uppercase, lowercase, number, and special character</p>
+          {/* General error displayed here, contains validation messages or API errors */}
+          {error && (
+            <p className="text-red-500 text-sm  pb-2">{error}</p>
+          )}
           <Input
             label="Password"
-            type="password"
+            type="password" // Now includes the show/hide toggle from Input.tsx
             placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            error={error}
+            icon={<Lock className="w-5 h-5" />} // Added icon
           />
           <Input
             label="Confirm Password"
-            type="password"
+            type="password" // Now includes the show/hide toggle from Input.tsx
             placeholder="••••••••"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
+            icon={<Lock className="w-5 h-5" />} // Added icon
           />
           <Button type="submit" isLoading={isLoading} className="w-full">
             Create Account

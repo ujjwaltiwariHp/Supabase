@@ -1,3 +1,4 @@
+// FILE: src/components/forms/LoginForm.tsx
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -5,6 +6,7 @@ import { login } from '@/lib/api';
 import { validateEmail, getErrorMessage } from '@/utils/helpers';
 import Input from '../ui/Input';
 import Button from '../ui/Button';
+import { Mail, Lock } from 'lucide-react'; // Import icons
 
 export default function LoginForm() {
   const router = useRouter();
@@ -12,13 +14,15 @@ export default function LoginForm() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [emailError, setEmailError] = useState(''); // New state for input validation error
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setEmailError('');
     setError('');
 
     if (!validateEmail(email)) {
-      setError('Please enter a valid email');
+      setEmailError('Please enter a valid email');
       return;
     }
 
@@ -31,6 +35,7 @@ export default function LoginForm() {
     try {
       const result = await login(email, password);
       if (result.success) {
+        // Redirect to dashboard on successful login
         router.push('/dashboard');
       } else {
         setError(getErrorMessage(result));
@@ -51,15 +56,21 @@ export default function LoginForm() {
         placeholder="you@example.com"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        error={error}
+        icon={<Mail className="w-5 h-5" />} // Added icon
+        error={emailError} // Display email validation error
       />
       <Input
         label="Password"
-        type="password"
+        type="password" // Now includes the show/hide toggle from Input.tsx
         placeholder="••••••••"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
+        icon={<Lock className="w-5 h-5" />} // Added icon
       />
+      {/* Display general form/API error above the button */}
+      {error && (
+        <p className="text-red-500 text-sm mt-2 pb-2 text-center">{error}</p>
+      )}
       <Button type="submit" isLoading={isLoading} className="w-full">
         Login
       </Button>
